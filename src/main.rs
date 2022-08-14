@@ -2,6 +2,7 @@ mod args;
 mod cache;
 mod database;
 
+use anyhow::anyhow;
 use args::Args;
 use clap::Parser;
 
@@ -22,7 +23,7 @@ fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error 
     Ok(content)
 }
 
-fn main() -> Result<(), anyhow::Error> {
+fn run_app() -> Result<(), anyhow::Error> {
     // Parse arguments
     let args = Args::parse();
     let url: String = args.url;
@@ -40,11 +41,20 @@ fn main() -> Result<(), anyhow::Error> {
 
     if cache.content == content {
         // Unchanged content
-        println!("Content is the same, doing nothing");
+        Err(anyhow!("Content is the same, doing nothing"))
     } else {
         println!("Content is different, doing something");
         update_cache(&connection, &url, &selector, &content)?;
+        Ok(())
     }
+}
 
-    Ok(())
+fn main() {
+    std::process::exit(match run_app() {
+        Ok(_) => 0,
+        Err(err) => {
+            println!("{}", err.to_string());
+            1
+        }
+    });
 }
