@@ -2,8 +2,10 @@
 name = "sukurappa"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Watch for changes on a webpage and do anything with it!"
+license = "MIT"
+documentation = "https://github.com/aeyoll/sukurappa"
+homepage = "https://github.com/aeyoll/sukurappa"
 
 [dependencies]
 anyhow = "1.0"
