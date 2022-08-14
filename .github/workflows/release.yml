@@ -44,7 +44,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
-          bin: jimaku
+          bin: sukurappa
           tar: unix
           zip: none
           target: ${{ matrix.target }}
