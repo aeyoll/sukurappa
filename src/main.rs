@@ -23,18 +23,19 @@ fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error 
 }
 
 fn main() -> Result<(), anyhow::Error> {
+    // Parse arguments
     let args = Args::parse();
     let url: String = args.url;
     let selector: String = args.selector;
 
-    println!("Getting \"{}\" selector content on {}", selector, url);
-
+    // Fetching content from webpage
     let content = parse(&url, &selector).unwrap();
 
+    // Init database
     let connection = get_connection()?;
-
-    // Create cache table
     create_cache_table(&connection)?;
+
+    // Search for cache
     let cache = search_cache(&connection, &url, &selector, &content)?;
 
     if cache.content == content {
