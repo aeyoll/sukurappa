@@ -52,8 +52,8 @@ fn run_app() -> Result<(), anyhow::Error> {
 fn main() {
     std::process::exit(match run_app() {
         Ok(_) => 0,
-        Err(err) => {
-            println!("{}", err.to_string());
+        Err(_err) => {
+            // println!("{}", _err.to_string());
             1
         }
     });
