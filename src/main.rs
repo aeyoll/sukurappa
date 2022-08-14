@@ -41,7 +41,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let content = parse(&url, &selector).unwrap();
 
-    let connection = Connection::open_in_memory()?;
+    let path = "./db.db3";
+    let connection = Connection::open(path)?;
 
     // Create cache table
     connection.execute(
