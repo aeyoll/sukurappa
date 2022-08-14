@@ -43,7 +43,7 @@ fn run_app() -> Result<(), anyhow::Error> {
         // Unchanged content
         Err(anyhow!("Content is the same, doing nothing"))
     } else {
-        println!("Content is different, doing something");
+        println!("{}", &content);
         update_cache(&connection, &url, &selector, &content)?;
         Ok(())
     }
