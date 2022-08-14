@@ -72,3 +72,17 @@ pub fn insert_cache(
 
     Ok(())
 }
+
+pub fn update_cache(
+    connection: &Connection,
+    url: &str,
+    selector: &str,
+    content: &str,
+) -> Result<(), anyhow::Error> {
+    connection.execute(
+        "UPDATE cache SET content = ?3 WHERE url = ?1 AND selector = ?2",
+        (&url, &selector, &content),
+    )?;
+
+    Ok(())
+}

@@ -2,10 +2,9 @@ mod args;
 mod cache;
 
 use args::Args;
-use cache::Cache;
 use clap::Parser;
 
-use crate::cache::{create_cache_table, insert_cache, search_cache};
+use crate::cache::{create_cache_table, search_cache, update_cache};
 use rusqlite::{Connection, Result};
 
 fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
@@ -43,6 +42,7 @@ fn main() -> Result<(), anyhow::Error> {
         println!("Content is the same, doing nothing");
     } else {
         println!("Content is different, doing something");
+        update_cache(&connection, &url, &selector, &content)?;
     }
 
     Ok(())
