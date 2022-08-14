@@ -1,11 +1,12 @@
 mod args;
 mod cache;
+mod database;
 
 use args::Args;
 use clap::Parser;
 
 use crate::cache::{create_cache_table, search_cache, update_cache};
-use rusqlite::{Connection, Result};
+use crate::database::get_connection;
 
 fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     // Fetch the documents html
@@ -30,8 +31,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     let content = parse(&url, &selector).unwrap();
 
-    let path = "./db.db3";
-    let connection = Connection::open(path)?;
+    let connection = get_connection()?;
 
     // Create cache table
     create_cache_table(&connection)?;
