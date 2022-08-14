@@ -1,22 +1,12 @@
 mod args;
+mod cache;
 
 use args::Args;
+use cache::Cache;
 use clap::Parser;
 
+use crate::cache::{create_cache_table, insert_cache, search_cache};
 use rusqlite::{Connection, Result};
-
-#[derive(Debug)]
-struct Cache {
-    url: String,
-    selector: String,
-    content: String,
-}
-
-impl PartialEq for Cache {
-    fn eq(&self, other: &Self) -> bool {
-        self.url == other.url && self.selector == other.selector && self.content == other.content
-    }
-}
 
 fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     // Fetch the documents html
@@ -32,10 +22,10 @@ fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error 
     Ok(content)
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), anyhow::Error> {
     let args = Args::parse();
-    let url = args.url;
-    let selector = args.selector;
+    let url: String = args.url;
+    let selector: String = args.selector;
 
     println!("Getting \"{}\" selector content on {}", selector, url);
 
@@ -45,40 +35,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let connection = Connection::open(path)?;
 
     // Create cache table
-    connection.execute(
-        "CREATE TABLE IF NOT EXISTS cache (
-            url      TEXT NOT NULL,
-            selector TEXT NOT NULL,
-            content  TEXT NOT NULL
-        )",
-        (), // empty list of parameters.
-    )?;
-
-    let mut stmt = connection.prepare(
-        "SELECT url, selector, content FROM cache where url = :url AND selector = :selector",
-    )?;
-    let cache: Cache = match stmt.query_row(&[(":url", &url), (":selector", &selector)], |row| {
-        Ok(Cache {
-            url: row.get(0)?,
-            selector: row.get(1)?,
-            content: row.get(2)?,
-        })
-    }) {
-        Ok(cache) => cache,
-        Err(rusqlite::Error::QueryReturnedNoRows) => {
-            connection.execute(
-                "INSERT INTO cache (url, selector, content) VALUES (?1, ?2, ?3)",
-                (&url, &selector, &content),
-            )?;
-
-            Cache {
-                url,
-                selector,
-                content: content.to_string(),
-            }
-        }
-        _ => panic!("Error while fetching cache"), // @TODO: improve me
-    };
+    create_cache_table(&connection)?;
+    let cache = search_cache(&connection, &url, &selector, &content)?;
 
     if cache.content == content {
         // Unchanged content
