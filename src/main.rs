@@ -46,7 +46,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create cache table
     connection.execute(
-        "CREATE TABLE cache (
+        "CREATE TABLE IF NOT EXISTS cache (
             url      TEXT NOT NULL,
             selector TEXT NOT NULL,
             content  TEXT NOT NULL
