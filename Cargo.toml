@@ -1,6 +1,6 @@
 [package]
 name = "sukurappa"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Watch for changes on a webpage and do anything with it!"
 license = "MIT"
