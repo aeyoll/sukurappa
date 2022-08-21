@@ -1,27 +1,23 @@
 use crate::CONNECTION;
 use cli_table::Table;
 
+/// Stores the last fetched content for a combination of an url
+/// and a selector
 #[derive(Debug, Table)]
 pub struct Cache {
     #[table(title = "Url")]
-    pub(crate) url: String,
+    pub url: String,
 
     #[table(title = "Selector")]
-    pub(crate) selector: String,
+    pub selector: String,
 
     #[table(skip)]
-    pub(crate) content: String,
+    pub content: String,
 }
 
-impl PartialEq for Cache {
-    fn eq(&self, other: &Self) -> bool {
-        self.url == other.url && self.selector == other.selector && self.content == other.content
-    }
-}
-
+/// Create the cache table in SQLite if not already existing
 pub fn create_cache_table() -> Result<(), anyhow::Error> {
     let connection = CONNECTION.lock().unwrap();
-    // Create cache table
     connection.execute(
         "CREATE TABLE IF NOT EXISTS cache (
             url      TEXT NOT NULL,
@@ -34,6 +30,7 @@ pub fn create_cache_table() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+/// Return a list of Cache instances
 pub fn list_cache() -> Result<Vec<Cache>, anyhow::Error> {
     let connection = CONNECTION.lock().unwrap();
     let mut stmt = connection.prepare("SELECT url, selector, content FROM cache")?;
@@ -52,6 +49,8 @@ pub fn list_cache() -> Result<Vec<Cache>, anyhow::Error> {
     Ok(caches)
 }
 
+/// Try to find a Cache instance from an url + selector combination in
+/// the SQLite database
 pub fn search_cache(url: &str, selector: &str, content: &str) -> Result<Cache, anyhow::Error> {
     let connection = CONNECTION.lock().unwrap();
     let mut stmt = connection.prepare(
@@ -80,6 +79,7 @@ pub fn search_cache(url: &str, selector: &str, content: &str) -> Result<Cache, a
     Ok(cache)
 }
 
+/// Insert a Cache instance into the SQLite database
 pub fn insert_cache(url: &str, selector: &str, content: &str) -> Result<(), anyhow::Error> {
     let connection = CONNECTION.lock().unwrap();
     connection.execute(
@@ -90,6 +90,7 @@ pub fn insert_cache(url: &str, selector: &str, content: &str) -> Result<(), anyh
     Ok(())
 }
 
+/// Update a Cache instance in the SQLite database
 pub fn update_cache(url: &str, selector: &str, content: &str) -> Result<(), anyhow::Error> {
     let connection = CONNECTION.lock().unwrap();
     connection.execute(
@@ -100,6 +101,7 @@ pub fn update_cache(url: &str, selector: &str, content: &str) -> Result<(), anyh
     Ok(())
 }
 
+/// Remove a Cache instance from the SQLite database
 pub fn remove_cache(url: &str, selector: &str) -> Result<(), anyhow::Error> {
     let connection = CONNECTION.lock().unwrap();
     connection.execute(

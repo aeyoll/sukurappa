@@ -5,8 +5,10 @@ use log::{debug, error, info};
 pub struct ListCommand;
 
 impl ListCommand {
+    /// Execute the "list" subcommand
     pub fn run() {
         debug!("Running the \"list\" command");
+
         match list_cache() {
             Ok(caches) => {
                 if !caches.is_empty() {

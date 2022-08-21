@@ -6,6 +6,7 @@ use crate::cache::{search_cache, update_cache, Cache};
 use crate::list_cache;
 use clokwerk::{Scheduler, TimeUnits};
 use duct::cmd;
+use log::debug;
 
 fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     // Fetch the documents html
@@ -56,7 +57,10 @@ fn process(command: &str) -> Result<(), Error> {
 pub struct WatchCommand;
 
 impl WatchCommand {
+    /// Execute the "watch" subcommand
     pub fn run(frequency: &u32, command: String) {
+        debug!("Running the \"watch\" command");
+
         // Create a new scheduler
         let mut scheduler = Scheduler::new();
         scheduler
