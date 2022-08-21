@@ -1,5 +1,6 @@
 use std::thread;
 use std::time::Duration;
+use anyhow::Error;
 
 use crate::cache::{search_cache, update_cache, Cache};
 use crate::{get_connection, list_cache};
@@ -19,22 +20,30 @@ fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error 
     Ok(content)
 }
 
-fn process() {
+fn process() -> Result<(), Error> {
     let connection = get_connection().unwrap();
     let caches: Vec<Cache> = list_cache(&connection).unwrap();
 
     caches.into_iter().for_each(|cache| {
         // Fetching content from webpage
-        let content = parse(&cache.url, &cache.selector).unwrap();
+        let content = match parse(&cache.url, &cache.selector) {
+            Ok(content) => content,
+            Err(_e) => {
+                eprintln!("Failed to get content for {}", &cache.url);
+                return
+            },
+        };
 
         // Search for cache
         let cache = search_cache(&connection, &cache.url, &cache.selector, &content).unwrap();
 
         if cache.content != content {
-            println!("{}", &content);
+            println!("Content updated for url: {}", &cache.url);
             update_cache(&connection, &cache.url, &cache.selector, &content).unwrap();
         }
     });
+
+    Ok(())
 }
 
 pub struct WatchCommand;
@@ -43,7 +52,7 @@ impl WatchCommand {
     pub fn run() {
         // Create a new scheduler
         let mut scheduler = Scheduler::new();
-        scheduler.every(1.second()).run(process);
+        scheduler.every(1.second()).run(|| process().unwrap());
 
         loop {
             scheduler.run_pending();
