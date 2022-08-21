@@ -1,6 +1,7 @@
 mod cache;
 mod cli;
 mod database;
+mod commands;
 
 use anyhow::{anyhow, Error};
 use clap::Parser;
@@ -9,6 +10,7 @@ use cli_table::{print_stdout, WithTitle};
 
 use crate::cache::{Cache, create_cache_table, insert_cache, list_cache, remove_cache, search_cache, update_cache};
 use crate::cli::Commands;
+use crate::commands::list::ListCommand;
 use crate::database::get_connection;
 
 fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
@@ -25,7 +27,7 @@ fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error 
     Ok(content)
 }
 
-fn run_app() -> Result<(), anyhow::Error> {
+fn run_app() -> Result<(), Error> {
     // Parse arguments
     let cli = Cli::parse();
 
@@ -48,12 +50,7 @@ fn run_app() -> Result<(), anyhow::Error> {
             todo!("Implement watch");
         }
 
-        Commands::List {} => {
-            match list_cache(&connection) {
-                Ok(caches) => print_stdout(caches.with_title())?,
-                Err(_) => {}
-            }
-        }
+        Commands::List {} => ListCommand::run(&connection),
     }
 
     Ok(())
