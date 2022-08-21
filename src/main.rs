@@ -7,6 +7,7 @@ use anyhow::Error;
 use clap::Parser;
 use cli::Cli;
 use log::debug;
+use std::sync::Mutex;
 
 extern crate log;
 extern crate pretty_env_logger;
@@ -19,6 +20,11 @@ use crate::commands::remove::RemoveCommand;
 use crate::commands::watch::WatchCommand;
 use crate::database::get_connection;
 
+use once_cell::sync::Lazy;
+use rusqlite::Connection;
+
+static CONNECTION: Lazy<Mutex<Connection>> = Lazy::new(|| Mutex::new(get_connection().unwrap()));
+
 fn run_app() -> Result<(), Error> {
     // Parse arguments
     let cli = Cli::parse();
@@ -28,14 +34,12 @@ fn run_app() -> Result<(), Error> {
     debug!("Debug mode is on");
 
     // Init database
-    debug!("Initiating database connection");
-    let connection = get_connection()?;
-    create_cache_table(&connection)?;
+    create_cache_table()?;
 
     match &cli.command {
-        Commands::List {} => ListCommand::run(&connection),
-        Commands::Add { url, selector } => AddCommand::run(&connection, url, selector),
-        Commands::Remove { url, selector } => RemoveCommand::run(&connection, url, selector),
+        Commands::List {} => ListCommand::run(),
+        Commands::Add { url, selector } => AddCommand::run(url, selector),
+        Commands::Remove { url, selector } => RemoveCommand::run(url, selector),
         Commands::Watch { frequency, command } => WatchCommand::run(frequency, command.to_string()),
     }
 

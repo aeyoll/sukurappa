@@ -3,7 +3,7 @@ use std::thread;
 use std::time::Duration;
 
 use crate::cache::{search_cache, update_cache, Cache};
-use crate::{get_connection, list_cache};
+use crate::list_cache;
 use clokwerk::{Scheduler, TimeUnits};
 use duct::cmd;
 
@@ -21,8 +21,7 @@ fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error 
 }
 
 fn process(command: &str) -> Result<(), Error> {
-    let connection = get_connection().unwrap();
-    let caches: Vec<Cache> = list_cache(&connection).unwrap();
+    let caches: Vec<Cache> = list_cache().unwrap();
 
     caches.into_iter().for_each(|cache| {
         // Fetching content from webpage
@@ -35,11 +34,11 @@ fn process(command: &str) -> Result<(), Error> {
         };
 
         // Search for cache
-        let cache = search_cache(&connection, &cache.url, &cache.selector, &content).unwrap();
+        let cache = search_cache(&cache.url, &cache.selector, &content).unwrap();
 
         if cache.content != content {
             println!("Content updated for url: {}", &cache.url);
-            update_cache(&connection, &cache.url, &cache.selector, &content).unwrap();
+            update_cache(&cache.url, &cache.selector, &content).unwrap();
 
             let new_command = command
                 .replace("NEW_CONTENT", format!("\"{}\"", content).as_str())

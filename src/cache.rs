@@ -1,5 +1,5 @@
+use crate::CONNECTION;
 use cli_table::Table;
-use rusqlite::Connection;
 
 #[derive(Debug, Table)]
 pub struct Cache {
@@ -19,7 +19,8 @@ impl PartialEq for Cache {
     }
 }
 
-pub fn create_cache_table(connection: &Connection) -> Result<(), anyhow::Error> {
+pub fn create_cache_table() -> Result<(), anyhow::Error> {
+    let connection = CONNECTION.lock().unwrap();
     // Create cache table
     connection.execute(
         "CREATE TABLE IF NOT EXISTS cache (
@@ -33,7 +34,8 @@ pub fn create_cache_table(connection: &Connection) -> Result<(), anyhow::Error> 
     Ok(())
 }
 
-pub fn list_cache(connection: &Connection) -> Result<Vec<Cache>, anyhow::Error> {
+pub fn list_cache() -> Result<Vec<Cache>, anyhow::Error> {
+    let connection = CONNECTION.lock().unwrap();
     let mut stmt = connection.prepare("SELECT url, selector, content FROM cache")?;
     let caches: Vec<Cache> = stmt
         .query_map([], |row| {
@@ -50,12 +52,8 @@ pub fn list_cache(connection: &Connection) -> Result<Vec<Cache>, anyhow::Error> 
     Ok(caches)
 }
 
-pub fn search_cache(
-    connection: &Connection,
-    url: &str,
-    selector: &str,
-    content: &str,
-) -> Result<Cache, anyhow::Error> {
+pub fn search_cache(url: &str, selector: &str, content: &str) -> Result<Cache, anyhow::Error> {
+    let connection = CONNECTION.lock().unwrap();
     let mut stmt = connection.prepare(
         "SELECT url, selector, content FROM cache WHERE url = :url AND selector = :selector",
     )?;
@@ -68,7 +66,7 @@ pub fn search_cache(
     }) {
         Ok(cache) => cache,
         Err(rusqlite::Error::QueryReturnedNoRows) => {
-            insert_cache(connection, url, selector, content)?;
+            insert_cache(url, selector, content)?;
 
             Cache {
                 url: url.to_string(),
@@ -82,12 +80,8 @@ pub fn search_cache(
     Ok(cache)
 }
 
-pub fn insert_cache(
-    connection: &Connection,
-    url: &str,
-    selector: &str,
-    content: &str,
-) -> Result<(), anyhow::Error> {
+pub fn insert_cache(url: &str, selector: &str, content: &str) -> Result<(), anyhow::Error> {
+    let connection = CONNECTION.lock().unwrap();
     connection.execute(
         "INSERT INTO cache (url, selector, content) VALUES (?1, ?2, ?3)",
         (&url, &selector, &content),
@@ -96,12 +90,8 @@ pub fn insert_cache(
     Ok(())
 }
 
-pub fn update_cache(
-    connection: &Connection,
-    url: &str,
-    selector: &str,
-    content: &str,
-) -> Result<(), anyhow::Error> {
+pub fn update_cache(url: &str, selector: &str, content: &str) -> Result<(), anyhow::Error> {
+    let connection = CONNECTION.lock().unwrap();
     connection.execute(
         "UPDATE cache SET content = ?3 WHERE url = ?1 AND selector = ?2",
         (&url, &selector, &content),
@@ -110,11 +100,8 @@ pub fn update_cache(
     Ok(())
 }
 
-pub fn remove_cache(
-    connection: &Connection,
-    url: &str,
-    selector: &str,
-) -> Result<(), anyhow::Error> {
+pub fn remove_cache(url: &str, selector: &str) -> Result<(), anyhow::Error> {
+    let connection = CONNECTION.lock().unwrap();
     connection.execute(
         "DELETE FROM cache WHERE url = ?1 AND selector = ?2",
         (&url, &selector),
