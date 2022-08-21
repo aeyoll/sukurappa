@@ -16,3 +16,5 @@ rusqlite = { version = "0.28.0", features = ["bundled"] }
 cli-table = "0.4.7"
 clokwerk = "0.3.5"
 duct = "0.13.5"
+log = "0.4"
+pretty_env_logger = "0.4.0"

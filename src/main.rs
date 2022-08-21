@@ -6,6 +6,10 @@ mod database;
 use anyhow::Error;
 use clap::Parser;
 use cli::Cli;
+use log::debug;
+
+extern crate log;
+extern crate pretty_env_logger;
 
 use crate::cache::{create_cache_table, insert_cache, list_cache, remove_cache};
 use crate::cli::Commands;
@@ -19,7 +23,12 @@ fn run_app() -> Result<(), Error> {
     // Parse arguments
     let cli = Cli::parse();
 
+    // Init logger
+    pretty_env_logger::init();
+    debug!("Debug mode is on");
+
     // Init database
+    debug!("Initiating database connection");
     let connection = get_connection()?;
     create_cache_table(&connection)?;
 
