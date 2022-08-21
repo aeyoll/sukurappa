@@ -12,21 +12,8 @@ use crate::cli::Commands;
 use crate::commands::add::AddCommand;
 use crate::commands::list::ListCommand;
 use crate::commands::remove::RemoveCommand;
+use crate::commands::watch::WatchCommand;
 use crate::database::get_connection;
-
-fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    // Fetch the documents html
-    // @TODO: manage http error codes
-    let response = ureq::get(url).call()?.into_string()?;
-
-    let document = scraper::Html::parse_document(&response);
-    let element_selector = scraper::Selector::parse(selector).unwrap();
-    let elements = document.select(&element_selector).map(|x| x.inner_html());
-
-    let content = elements.into_iter().next().unwrap().trim().to_string();
-
-    Ok(content)
-}
 
 fn run_app() -> Result<(), Error> {
     // Parse arguments
@@ -40,10 +27,7 @@ fn run_app() -> Result<(), Error> {
         Commands::List {} => ListCommand::run(&connection),
         Commands::Add { url, selector } => AddCommand::run(&connection, &url, &selector),
         Commands::Remove { url, selector } => RemoveCommand::run(&connection, &url, &selector),
-
-        Commands::Watch {} => {
-            todo!("Implement watch");
-        }
+        Commands::Watch {} => WatchCommand::run(),
     }
 
     Ok(())
