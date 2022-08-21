@@ -1,5 +1,5 @@
-use rusqlite::Connection;
 use crate::insert_cache;
+use rusqlite::Connection;
 
 pub struct AddCommand;
 

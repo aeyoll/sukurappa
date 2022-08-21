@@ -1,17 +1,17 @@
 mod cache;
 mod cli;
-mod database;
 mod commands;
+mod database;
 
-use anyhow::{anyhow, Error};
+use anyhow::Error;
 use clap::Parser;
 use cli::Cli;
-use cli_table::{print_stdout, WithTitle};
 
-use crate::cache::{Cache, create_cache_table, insert_cache, list_cache, remove_cache, search_cache, update_cache};
+use crate::cache::{create_cache_table, insert_cache, list_cache, remove_cache};
 use crate::cli::Commands;
 use crate::commands::add::AddCommand;
 use crate::commands::list::ListCommand;
+use crate::commands::remove::RemoveCommand;
 use crate::database::get_connection;
 
 fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
@@ -37,18 +37,13 @@ fn run_app() -> Result<(), Error> {
     create_cache_table(&connection)?;
 
     match &cli.command {
+        Commands::List {} => ListCommand::run(&connection),
         Commands::Add { url, selector } => AddCommand::run(&connection, &url, &selector),
-
-        Commands::Remove { url, selector } => match remove_cache(&connection, &url, &selector) {
-            Ok(_) => println!("Url removed"),
-            Err(_) => println!("Failed to remove url"),
-        },
+        Commands::Remove { url, selector } => RemoveCommand::run(&connection, &url, &selector),
 
         Commands::Watch {} => {
             todo!("Implement watch");
         }
-
-        Commands::List {} => ListCommand::run(&connection),
     }
 
     Ok(())

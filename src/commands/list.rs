@@ -1,6 +1,6 @@
+use crate::list_cache;
 use cli_table::{print_stdout, WithTitle};
 use rusqlite::Connection;
-use crate::list_cache;
 
 pub struct ListCommand;
 
