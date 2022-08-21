@@ -1,12 +1,14 @@
-mod args;
 mod cache;
+mod cli;
 mod database;
 
-use anyhow::anyhow;
-use args::Args;
+use anyhow::{anyhow, Error};
 use clap::Parser;
+use cli::Cli;
+use cli_table::{print_stdout, WithTitle};
 
-use crate::cache::{create_cache_table, search_cache, update_cache};
+use crate::cache::{Cache, create_cache_table, insert_cache, list_cache, remove_cache, search_cache, update_cache};
+use crate::cli::Commands;
 use crate::database::get_connection;
 
 fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
@@ -25,28 +27,36 @@ fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error 
 
 fn run_app() -> Result<(), anyhow::Error> {
     // Parse arguments
-    let args = Args::parse();
-    let url: String = args.url;
-    let selector: String = args.selector;
-
-    // Fetching content from webpage
-    let content = parse(&url, &selector).unwrap();
+    let cli = Cli::parse();
 
     // Init database
     let connection = get_connection()?;
     create_cache_table(&connection)?;
 
-    // Search for cache
-    let cache = search_cache(&connection, &url, &selector, &content)?;
+    match &cli.command {
+        Commands::Add { url, selector } => match insert_cache(&connection, &url, &selector, "") {
+            Ok(_) => println!("Url added"),
+            Err(_) => println!("Failed to add url"),
+        },
 
-    if cache.content == content {
-        // Unchanged content
-        Err(anyhow!("Content is the same, doing nothing"))
-    } else {
-        println!("{}", &content);
-        update_cache(&connection, &url, &selector, &content)?;
-        Ok(())
+        Commands::Remove { url, selector } => match remove_cache(&connection, &url, &selector) {
+            Ok(_) => println!("Url removed"),
+            Err(_) => println!("Failed to remove url"),
+        },
+
+        Commands::Watch {} => {
+            todo!("Implement watch");
+        }
+
+        Commands::List {} => {
+            match list_cache(&connection) {
+                Ok(caches) => print_stdout(caches.with_title())?,
+                Err(_) => {}
+            }
+        }
     }
+
+    Ok(())
 }
 
 fn main() {

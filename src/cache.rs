@@ -1,9 +1,15 @@
+use cli_table::Table;
 use rusqlite::Connection;
 
-#[derive(Debug)]
+#[derive(Debug, Table)]
 pub struct Cache {
+    #[table(title = "Url")]
     pub(crate) url: String,
+
+    #[table(title = "Selector")]
     pub(crate) selector: String,
+
+    #[table(skip)]
     pub(crate) content: String,
 }
 
@@ -27,6 +33,23 @@ pub fn create_cache_table(connection: &Connection) -> Result<(), anyhow::Error> 
     Ok(())
 }
 
+pub fn list_cache(connection: &Connection) -> Result<Vec<Cache>, anyhow::Error> {
+    let mut stmt = connection.prepare("SELECT url, selector, content FROM cache")?;
+    let caches: Vec<Cache> = stmt
+        .query_map([], |row| {
+            Ok(Cache {
+                url: row.get(0)?,
+                selector: row.get(1)?,
+                content: row.get(2)?,
+            })
+        })
+        .unwrap()
+        .filter_map(|x| x.ok())
+        .collect();
+
+    Ok(caches)
+}
+
 pub fn search_cache(
     connection: &Connection,
     url: &str,
@@ -34,7 +57,7 @@ pub fn search_cache(
     content: &str,
 ) -> Result<Cache, anyhow::Error> {
     let mut stmt = connection.prepare(
-        "SELECT url, selector, content FROM cache where url = :url AND selector = :selector",
+        "SELECT url, selector, content FROM cache WHERE url = :url AND selector = :selector",
     )?;
     let cache: Cache = match stmt.query_row(&[(":url", &url), (":selector", &selector)], |row| {
         Ok(Cache {
@@ -82,6 +105,19 @@ pub fn update_cache(
     connection.execute(
         "UPDATE cache SET content = ?3 WHERE url = ?1 AND selector = ?2",
         (&url, &selector, &content),
+    )?;
+
+    Ok(())
+}
+
+pub fn remove_cache(
+    connection: &Connection,
+    url: &str,
+    selector: &str,
+) -> Result<(), anyhow::Error> {
+    connection.execute(
+        "DELETE FROM cache WHERE url = ?1 AND selector = ?2",
+        (&url, &selector),
     )?;
 
     Ok(())
