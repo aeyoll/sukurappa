@@ -1,6 +1,6 @@
+use anyhow::Error;
 use std::thread;
 use std::time::Duration;
-use anyhow::Error;
 
 use crate::cache::{search_cache, update_cache, Cache};
 use crate::{get_connection, list_cache};
@@ -30,8 +30,8 @@ fn process() -> Result<(), Error> {
             Ok(content) => content,
             Err(_e) => {
                 eprintln!("Failed to get content for {}", &cache.url);
-                return
-            },
+                return;
+            }
         };
 
         // Search for cache
@@ -49,10 +49,12 @@ fn process() -> Result<(), Error> {
 pub struct WatchCommand;
 
 impl WatchCommand {
-    pub fn run() {
+    pub fn run(frequency: &u32) {
         // Create a new scheduler
         let mut scheduler = Scheduler::new();
-        scheduler.every(1.second()).run(|| process().unwrap());
+        scheduler
+            .every(frequency.second())
+            .run(|| process().unwrap());
 
         loop {
             scheduler.run_pending();

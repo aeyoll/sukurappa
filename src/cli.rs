@@ -13,7 +13,10 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    Watch {},
+    Watch {
+        #[clap(short, long, default_value_t = 60)]
+        frequency: u32,
+    },
     List {},
     Add {
         #[clap(short, long)]
