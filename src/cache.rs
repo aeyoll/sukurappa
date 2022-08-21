@@ -68,7 +68,7 @@ pub fn search_cache(
     }) {
         Ok(cache) => cache,
         Err(rusqlite::Error::QueryReturnedNoRows) => {
-            insert_cache(&connection, &url, &selector, &content)?;
+            insert_cache(connection, url, selector, content)?;
 
             Cache {
                 url: url.to_string(),

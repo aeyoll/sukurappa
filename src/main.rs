@@ -25,8 +25,8 @@ fn run_app() -> Result<(), Error> {
 
     match &cli.command {
         Commands::List {} => ListCommand::run(&connection),
-        Commands::Add { url, selector } => AddCommand::run(&connection, &url, &selector),
-        Commands::Remove { url, selector } => RemoveCommand::run(&connection, &url, &selector),
+        Commands::Add { url, selector } => AddCommand::run(&connection, url, selector),
+        Commands::Remove { url, selector } => RemoveCommand::run(&connection, url, selector),
         Commands::Watch {} => WatchCommand::run(),
     }
 

@@ -4,7 +4,6 @@ use std::time::Duration;
 use crate::cache::{search_cache, update_cache, Cache};
 use crate::{get_connection, list_cache};
 use clokwerk::{Scheduler, TimeUnits};
-use rusqlite::Connection;
 
 fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     // Fetch the documents html
@@ -44,7 +43,7 @@ impl WatchCommand {
     pub fn run() {
         // Create a new scheduler
         let mut scheduler = Scheduler::new();
-        scheduler.every(1.second()).run(|| process());
+        scheduler.every(1.second()).run(process);
 
         loop {
             scheduler.run_pending();

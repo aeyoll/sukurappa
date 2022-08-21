@@ -6,9 +6,9 @@ pub struct ListCommand;
 
 impl ListCommand {
     pub fn run(connection: &Connection) {
-        match list_cache(&connection) {
+        match list_cache(connection) {
             Ok(caches) => print_stdout(caches.with_title()).unwrap(),
-            Err(_) => {}
+            Err(_) => eprintln!("Nothing to display"),
         }
     }
 }
