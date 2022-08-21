@@ -36,6 +36,8 @@ sukurappa remove --url https://example.org --selector "h1"
 sukurappa list
 
 # Watch for changes every 5 seconds and send an email with the new content every times it changes
+# URL will be replaced with the actual url
+# NEW_CONTENT will be replaced with... the new content
 sukurappa watch --command='mail -s "[Sukurappa] Content changed in URL" my@email.com <<< NEW_CONTENT' --frequency=5
 ```
 
