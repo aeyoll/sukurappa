@@ -10,6 +10,7 @@ use cli_table::{print_stdout, WithTitle};
 
 use crate::cache::{Cache, create_cache_table, insert_cache, list_cache, remove_cache, search_cache, update_cache};
 use crate::cli::Commands;
+use crate::commands::add::AddCommand;
 use crate::commands::list::ListCommand;
 use crate::database::get_connection;
 
@@ -36,10 +37,7 @@ fn run_app() -> Result<(), Error> {
     create_cache_table(&connection)?;
 
     match &cli.command {
-        Commands::Add { url, selector } => match insert_cache(&connection, &url, &selector, "") {
-            Ok(_) => println!("Url added"),
-            Err(_) => println!("Failed to add url"),
-        },
+        Commands::Add { url, selector } => AddCommand::run(&connection, &url, &selector),
 
         Commands::Remove { url, selector } => match remove_cache(&connection, &url, &selector) {
             Ok(_) => println!("Url removed"),
