@@ -41,7 +41,9 @@ fn process(command: &str) -> Result<(), Error> {
             println!("Content updated for url: {}", &cache.url);
             update_cache(&connection, &cache.url, &cache.selector, &content).unwrap();
 
-            let new_command = command.replace("NEW_CONTENT", format!("\"{}\"", content).as_str());
+            let new_command = command
+                .replace("NEW_CONTENT", format!("\"{}\"", content).as_str())
+                .replace("URL", &cache.url);
             match cmd!("bash", "-c", &new_command).run() {
                 Ok(_) => println!("Successfully ran {}", &new_command),
                 Err(_) => eprintln!("Failed to run {}", &new_command),

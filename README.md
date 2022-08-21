@@ -26,7 +26,17 @@ Usage
 ---
 
 ```shell
-sukurappa --url https://example.org --selector "h1" | mail -E -s "Example.org h1 changed!" example@example.org
+# Add an url + selector to watch
+sukurappa add --url https://example.org --selector "h1"
+
+# Remove an url + selector to watch
+sukurappa remove --url https://example.org --selector "h1"
+
+# List watched urls + selectors
+sukurappa list
+
+# Watch for changes every 5 seconds and send an email with the new content every times it changes
+sukurappa watch --command='mail -s "[Sukurappa] Content changed in URL" my@email.com <<< NEW_CONTENT' --frequency=5
 ```
 
 Rust version requirements
