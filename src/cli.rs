@@ -13,24 +13,34 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Do an action when the content of a webpage changes
     Watch {
+        /// The duration is seconds to check for website changes
         #[clap(short, long, default_value_t = 60)]
         frequency: u32,
     },
+
+    /// List all websites in the watch list
     List {},
+
+    /// Add a website to the watch list
     Add {
+        /// The url of the website (with scheme)
         #[clap(short, long)]
         url: String,
 
-        /// selector
+        /// The CSS selector to observe. If the selector is present multiple
+        /// times, the first one will be used.
         #[clap(short, long)]
         selector: String,
     },
+    /// Remove a website from the watch list
     Remove {
+        /// The url of the website (with scheme)
         #[clap(short, long)]
         url: String,
 
-        /// selector
+        /// The CSS selector to remove
         #[clap(short, long)]
         selector: String,
     },
