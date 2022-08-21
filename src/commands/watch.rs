@@ -20,7 +20,7 @@ fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error 
     Ok(content)
 }
 
-fn process(command: &String) -> Result<(), Error> {
+fn process(command: &str) -> Result<(), Error> {
     let connection = get_connection().unwrap();
     let caches: Vec<Cache> = list_cache(&connection).unwrap();
 

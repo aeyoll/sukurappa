@@ -10,7 +10,7 @@ impl ListCommand {
         debug!("Running the \"list\" command");
         match list_cache(connection) {
             Ok(caches) => {
-                if caches.len() > 0 {
+                if !caches.is_empty() {
                     print_stdout(caches.with_title()).unwrap();
                 } else {
                     info!("Nothing to display");
