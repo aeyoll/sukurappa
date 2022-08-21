@@ -27,7 +27,7 @@ fn run_app() -> Result<(), Error> {
         Commands::List {} => ListCommand::run(&connection),
         Commands::Add { url, selector } => AddCommand::run(&connection, url, selector),
         Commands::Remove { url, selector } => RemoveCommand::run(&connection, url, selector),
-        Commands::Watch { frequency } => WatchCommand::run(frequency),
+        Commands::Watch { frequency, command } => WatchCommand::run(frequency, command.to_string()),
     }
 
     Ok(())

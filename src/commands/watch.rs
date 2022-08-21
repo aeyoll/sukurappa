@@ -5,10 +5,10 @@ use std::time::Duration;
 use crate::cache::{search_cache, update_cache, Cache};
 use crate::{get_connection, list_cache};
 use clokwerk::{Scheduler, TimeUnits};
+use duct::cmd;
 
 fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     // Fetch the documents html
-    // @TODO: manage http error codes
     let response = ureq::get(url).call()?.into_string()?;
 
     let document = scraper::Html::parse_document(&response);
@@ -20,7 +20,7 @@ fn parse(url: &str, selector: &str) -> Result<String, Box<dyn std::error::Error 
     Ok(content)
 }
 
-fn process() -> Result<(), Error> {
+fn process(command: &String) -> Result<(), Error> {
     let connection = get_connection().unwrap();
     let caches: Vec<Cache> = list_cache(&connection).unwrap();
 
@@ -40,6 +40,12 @@ fn process() -> Result<(), Error> {
         if cache.content != content {
             println!("Content updated for url: {}", &cache.url);
             update_cache(&connection, &cache.url, &cache.selector, &content).unwrap();
+
+            let new_command = command.replace("NEW_CONTENT", format!("\"{}\"", content).as_str());
+            match cmd!("bash", "-c", &new_command).run() {
+                Ok(_) => println!("Successfully ran {}", &new_command),
+                Err(_) => eprintln!("Failed to run {}", &new_command),
+            }
         }
     });
 
@@ -49,12 +55,12 @@ fn process() -> Result<(), Error> {
 pub struct WatchCommand;
 
 impl WatchCommand {
-    pub fn run(frequency: &u32) {
+    pub fn run(frequency: &u32, command: String) {
         // Create a new scheduler
         let mut scheduler = Scheduler::new();
         scheduler
             .every(frequency.second())
-            .run(|| process().unwrap());
+            .run(move || process(&command).unwrap());
 
         loop {
             scheduler.run_pending();

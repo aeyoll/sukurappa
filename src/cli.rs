@@ -18,6 +18,11 @@ pub enum Commands {
         /// The duration is seconds to check for website changes
         #[clap(short, long, default_value_t = 60)]
         frequency: u32,
+
+        /// The command to run when the content changes. The string
+        /// "NEW_CONTENT" will be updated with the actual new content
+        #[clap(short, long)]
+        command: String,
     },
 
     /// List all websites in the watch list
